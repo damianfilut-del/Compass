@@ -1,5 +1,40 @@
 import { useEffect, useState } from "react";
 import { ALL_MOIS, CONTENT, LETTERS } from "../lib/content";
+import TopBar from "../components/TopBar";
+
+function Intro() {
+  return (
+    <div className="card intro">
+      <h1>מצפן טייב לחינוך</h1>
+      <p>
+        מצפן טייב לחינוך הוא פלטפורמה אסטרטגית לרשויות מקומיות המבקשות לקדם חינוך איכותי המבוסס על
+        נתונים, מותאם הקשר ובעל אימפקט ארוך טווח.
+      </p>
+      <p>
+        המצפן נשען על בסיס ההבנה שלרשות המקומית יש תפקיד משמעותי בקידום איכות החינוך: היכולת לחבר בין
+        מערכות, לזהות צרכים מקומיים, לייצר רצף חינוכי ולהוביל מדיניות המותאמת לצרכים הייחודיים של
+        הקהילה ולמרחב בו הם חיים.
+      </p>
+      <p>
+        המצפן, נועד לסייע לרשות המקומית לגבש מדיניות חינוך להובלת תהליך אסטרגי להובלת שינוי, המבוסס על
+        גישות כלים ופרקיטקות המכוונות לקידום איכות החינוך בגישה מערכתית. גישה זו משלבת שותפים
+        מהאקו-סיסטם הרשותי, הלומדים לפעול ביחד להגדיר את החזון המשותף, המטרות והיעדים, המתורגמים
+        לפעולות כבסיס לתוכנית עבודה יישומית המלווה במדידה, מעקב וליווי ולמידה מתמשכת.
+      </p>
+      <p>הפלטפורמה משלבת בין:</p>
+      <ul>
+        <li>תהליך אסטרטגי סדור להובלת שינוי חינוכי ברשות</li>
+        <li>מחקר וידע מקצועי עדכני מהארץ ומהעולם</li>
+        <li>פרקטיקות מיטביות מרשויות מובילות</li>
+        <li>כלים ליישום, תכנון, שיתוף ומדידה</li>
+      </ul>
+      <p>
+        לצד התהליך האסטרטגי, האתר מציע גישה למאגר ידע רחב הכולל עקרונות פעולה, מחקרים, מודלים ודוגמאות
+        יישומיות מרשויות בעולם, במטרה לחבר בין ידע תיאורטי לבין עבודה רשותית בפועל.
+      </p>
+    </div>
+  );
+}
 
 function IntroStep({ onNext, onBack }) {
   return (
@@ -66,9 +101,10 @@ export default function Home() {
   if (step === -3) {
     return (
       <div className="wrap">
-        <Header />
+        <TopBar />
+        <Intro />
         <div className="card">
-          <h2>ברוכים הבאים לשאלון הבסיס</h2>
+          <h2>בחירת הרשות המקומית שלכם</h2>
           {loadingProjects ? (
             <p className="muted">טוען...</p>
           ) : projects.length === 0 ? (
@@ -97,7 +133,7 @@ export default function Home() {
   if (step === -2) {
     return (
       <div className="wrap">
-        <Header />
+        <TopBar />
         <div className="card">
           <h2>פרטי המשיב/ה</h2>
           <div className="field">
@@ -120,7 +156,7 @@ export default function Home() {
   if (step === -1) {
     return (
       <div className="wrap">
-        <Header />
+        <TopBar />
         <IntroStep onBack={() => setStep(-2)} onNext={() => setStep(0)} />
       </div>
     );
@@ -134,7 +170,7 @@ export default function Home() {
 
     return (
       <div className="wrap">
-        <Header />
+        <TopBar />
         <div className="progress-outer">
           <div className="progress-inner" style={{ width: `${Math.round((step / ALL_MOIS.length) * 100)}%` }} />
         </div>
@@ -229,16 +265,6 @@ export default function Home() {
           תודה רבה על הזמן ועל השיתוף. התובנות שלכם הן הבסיס לתמונת המצב שתלווה את תהליך גיבוש
           אסטרטגיית החינוך של הרשות. צוות הקרן יחזור אליכם עם סיכום הממצאים.
         </p>
-      </div>
-    </div>
-  );
-}
-
-function Header() {
-  return (
-    <div className="topbar">
-      <div className="brand">
-        <b>מצפן טייב לחינוך</b>שאלון בסיס
       </div>
     </div>
   );

@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { CONTENT, ALL_MOIS } from "../../lib/content";
 import { isAdminRequest } from "../../lib/auth";
+import TopBar from "../../components/TopBar";
+
+const COMPARE_COLORS = [
+  "#185FA5", "#0F6E56", "#854F0B", "#993C1D",
+  "#A32D2D", "#0C447C", "#6B21A8", "#B45309",
+];
+
+function pctOf(avg) {
+  return avg === null || avg === undefined ? null : Math.round(((avg - 1) / 3) * 100);
+}
 
 export async function getServerSideProps({ req }) {
   if (!isAdminRequest(req)) {
@@ -87,6 +97,55 @@ function RadarChart({ perPrinciple }) {
   );
 }
 
+function ComparisonRadar({ series }) {
+  const cx = 140, cy = 140, R = 105;
+  const principles = CONTENT.principles;
+  const n = principles.length;
+  const axis = (i) => -Math.PI / 2 + i * ((2 * Math.PI) / n);
+  const ringPts = (frac) =>
+    principles
+      .map((p, i) => `${cx + R * frac * Math.cos(axis(i))},${cy + R * frac * Math.sin(axis(i))}`)
+      .join(" ");
+  const polyFor = (perPrinciple) =>
+    principles
+      .map((p, i) => {
+        const val = perPrinciple[p.id];
+        const pct = val === null || val === undefined ? 0 : (val - 1) / 3;
+        const r = R * pct;
+        return `${cx + r * Math.cos(axis(i))},${cy + r * Math.sin(axis(i))}`;
+      })
+      .join(" ");
+
+  return (
+    <svg viewBox="0 0 280 300" width="100%" height="300" style={{ maxWidth: 360, display: "block", margin: "0 auto" }}>
+      {[0.33, 0.66, 1].map((f) => (
+        <polygon key={f} points={ringPts(f)} fill="none" stroke="#e4e1d8" strokeWidth="1" />
+      ))}
+      {principles.map((p, i) => (
+        <line
+          key={p.id}
+          x1={cx} y1={cy}
+          x2={cx + R * Math.cos(axis(i))} y2={cy + R * Math.sin(axis(i))}
+          stroke="#e4e1d8" strokeWidth="1"
+        />
+      ))}
+      {principles.map((p, i) => (
+        <text
+          key={p.id}
+          x={cx + (R + 16) * Math.cos(axis(i))}
+          y={cy + (R + 16) * Math.sin(axis(i)) + 3}
+          fontSize="11" textAnchor="middle" fill="#8a887f" fontWeight="600"
+        >
+          {i + 1}
+        </text>
+      ))}
+      {series.map((s, si) => (
+        <polygon key={si} points={polyFor(s.perPrinciple)} fill={s.color} fillOpacity="0.10" stroke={s.color} strokeWidth="2" />
+      ))}
+    </svg>
+  );
+}
+
 export default function AdminDashboard() {
   const [projects, setProjects] = useState([]);
   const [newName, setNewName] = useState("");
@@ -94,6 +153,8 @@ export default function AdminDashboard() {
   const [responses, setResponses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [allResponses, setAllResponses] = useState({});
+  const [compareIds, setCompareIds] = useState([]);
 
   function loadProjects() {
     fetch("/api/projects")
@@ -110,6 +171,34 @@ export default function AdminDashboard() {
       .then((r) => r.json())
       .then((data) => setResponses(data.responses || []));
   }, [selected]);
+
+  // Load responses for every authority (for the comparison section).
+  useEffect(() => {
+    if (projects.length === 0) return;
+    let cancelled = false;
+    Promise.all(
+      projects.map((p) =>
+        fetch(`/api/responses?projectId=${p.id}`)
+          .then((r) => (r.ok ? r.json() : { responses: [] }))
+          .then((d) => [p.id, d.responses || []])
+          .catch(() => [p.id, []])
+      )
+    ).then((entries) => {
+      if (!cancelled) setAllResponses(Object.fromEntries(entries));
+    });
+    return () => { cancelled = true; };
+  }, [projects]);
+
+  // Default the comparison to all authorities that have at least one response.
+  useEffect(() => {
+    setCompareIds(projects.filter((p) => p.response_count > 0).map((p) => p.id));
+  }, [projects]);
+
+  function toggleCompare(id) {
+    setCompareIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   async function handleAddProject(e) {
     e.preventDefault();
@@ -137,6 +226,24 @@ export default function AdminDashboard() {
   const selectedProject = projects.find((p) => p.id === selected);
   const sc = selected != null ? computeScores(responses) : null;
 
+  const compareSeries = compareIds.map((pid, idx) => {
+    const proj = projects.find((p) => p.id === pid);
+    const resp = allResponses[pid] || [];
+    const { perPrinciple } = computeScores(resp);
+    const vals = CONTENT.principles
+      .map((p) => perPrinciple[p.id])
+      .filter((v) => v !== null && v !== undefined);
+    const overall = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    return {
+      id: pid,
+      name: proj ? proj.name : "",
+      color: COMPARE_COLORS[idx % COMPARE_COLORS.length],
+      perPrinciple,
+      overallPct: pctOf(overall),
+      count: resp.length,
+    };
+  });
+
   const notes = responses.flatMap((r) =>
     Object.entries(r.answers)
       .filter(([, a]) => a.text && a.text.trim())
@@ -145,10 +252,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="wrap">
-      <div className="topbar">
-        <div className="brand"><b>מצפן טייב לחינוך</b>לוח בקרה למנהל</div>
+      <TopBar subtitle="לוח בקרה למנהל">
         <button className="btn ghost" onClick={handleLogout}>התנתקות</button>
-      </div>
+      </TopBar>
 
       <div className="card">
         <h2>הוספת רשות מקומית</h2>
@@ -181,6 +287,78 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+
+      {projects.length > 0 && (
+        <div className="card">
+          <h2>השוואה בין רשויות</h2>
+          <p className="tiny" style={{ marginBottom: 12 }}>
+            בחרו אילו רשויות להשוות. ההשוואה מבוססת על ממוצעי הציונים לכל עקרון (באחוזים).
+          </p>
+          <div className="cmp-select">
+            {projects.map((p) => (
+              <label key={p.id}>
+                <input
+                  type="checkbox"
+                  checked={compareIds.includes(p.id)}
+                  onChange={() => toggleCompare(p.id)}
+                />
+                {p.name} <span className="tiny">({p.response_count})</span>
+              </label>
+            ))}
+          </div>
+
+          {compareSeries.length === 0 ? (
+            <div className="empty">בחרו רשות אחת או יותר כדי להציג השוואה.</div>
+          ) : (
+            <>
+              <div className="cmp-legend">
+                {compareSeries.map((s) => (
+                  <div className="item" key={s.id}>
+                    <span className="swatch" style={{ background: s.color }} />
+                    {s.name}
+                  </div>
+                ))}
+              </div>
+              <ComparisonRadar series={compareSeries} />
+              <div className="table-scroll" style={{ marginTop: 16 }}>
+                <table className="cmp-table">
+                  <thead>
+                    <tr>
+                      <th>עקרון</th>
+                      {compareSeries.map((s) => (
+                        <th key={s.id} style={{ color: s.color }}>{s.name}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CONTENT.principles.map((p, i) => (
+                      <tr key={p.id}>
+                        <td>{i + 1}. {p.name}</td>
+                        {compareSeries.map((s) => {
+                          const v = pctOf(s.perPrinciple[p.id]);
+                          return <td key={s.id}>{v === null ? "—" : v + "%"}</td>;
+                        })}
+                      </tr>
+                    ))}
+                    <tr className="cmp-total">
+                      <td>ממוצע כללי</td>
+                      {compareSeries.map((s) => (
+                        <td key={s.id}>{s.overallPct === null ? "—" : s.overallPct + "%"}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td>מספר משיבים</td>
+                      {compareSeries.map((s) => (
+                        <td key={s.id}>{s.count}</td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {selected != null && selectedProject && (
         <div className="card">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import TopBar from "../../components/TopBar";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
@@ -31,9 +32,7 @@ export default function AdminLogin() {
 
   return (
     <div className="wrap">
-      <div className="topbar">
-        <div className="brand"><b>מצפן טייב לחינוך</b>כניסת מנהל</div>
-      </div>
+      <TopBar subtitle="כניסת מנהל" />
       <form className="card" onSubmit={handleSubmit}>
         <h2>התחברות</h2>
         <div className="field">

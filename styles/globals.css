@@ -13,6 +13,18 @@ html, body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
 .brand{font-size:15px;color:var(--ink-2);}
 .brand b{color:var(--ink);font-size:19px;display:block;}
+.topbar-side{display:flex;align-items:center;}
+.topbar .logo{display:block;width:auto;}
+.topbar .logo-project{height:56px;}
+.topbar .logo-foundation{height:46px;}
+.topbar-center{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;flex:1;}
+.topbar-subtitle{font-size:15px;color:var(--ink-2);font-weight:600;}
+@media (max-width:560px){
+  .topbar{gap:10px;}
+  .topbar .logo-project{height:40px;}
+  .topbar .logo-foundation{height:32px;}
+  .topbar-subtitle{font-size:13.5px;}
+}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:16px;}
 h1{font-size:22px;margin:0 0 12px;}
 h2{font-size:18px;margin:0 0 12px;}
@@ -59,3 +71,19 @@ button.btn:disabled{opacity:.45;cursor:not-allowed;}
 .field label{display:block;font-size:13px;color:var(--ink-2);margin-bottom:5px;}
 .steps-nav{display:flex;justify-content:space-between;margin-top:18px;}
 .error-box{background:var(--red-light);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13.5px;margin-bottom:14px;}
+.intro h1{font-size:22px;margin:0 0 14px;color:var(--ink);}
+.intro p{margin:0 0 12px;font-size:14.5px;color:var(--ink-2);}
+.intro ul{margin:0 0 12px;padding-inline-start:22px;}
+.intro li{font-size:14.5px;color:var(--ink-2);margin-bottom:5px;}
+.cmp-select{display:flex;flex-wrap:wrap;gap:10px 18px;margin-bottom:14px;}
+.cmp-select label{display:flex;align-items:center;gap:6px;font-size:13.5px;cursor:pointer;}
+.cmp-select input{width:auto;}
+.cmp-legend{display:flex;flex-wrap:wrap;gap:12px 16px;margin:6px 0 12px;}
+.cmp-legend .item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2);}
+.cmp-legend .swatch{width:12px;height:12px;border-radius:3px;flex:none;}
+.table-scroll{overflow-x:auto;}
+.cmp-table{border-collapse:collapse;width:100%;font-size:13px;min-width:360px;}
+.cmp-table th,.cmp-table td{border:1px solid var(--line);padding:8px 10px;text-align:center;}
+.cmp-table th:first-child,.cmp-table td:first-child{text-align:right;font-weight:600;color:var(--ink);}
+.cmp-table thead th{background:var(--bg);}
+.cmp-table .cmp-total td{background:var(--blue-light);font-weight:600;}
