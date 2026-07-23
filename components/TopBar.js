@@ -5,7 +5,7 @@ export default function TopBar({ subtitle, children }) {
     <header className="topbar">
       <div className="topbar-side topbar-start">
         <img
-          src="/logo-compass.jpeg"
+          src="/logo-compass.png"
           alt="מצפן טייב לחינוך"
           className="logo logo-project"
         />
@@ -18,7 +18,7 @@ export default function TopBar({ subtitle, children }) {
       )}
       <div className="topbar-side topbar-end">
         <img
-          src="/logo-foundation.jpg"
+          src="/logo-foundation.png"
           alt="TAIB Foundation"
           className="logo logo-foundation"
         />
